@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="package" basedir="." xmlns:fx="javafx:com.sun.javafx.tools.ant">
+    
+    <!-- Enviroment  -->
+    <property environment="env" />
+
+    <!-- Task Defs -->
+    <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+    <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
+             uri="javafx:com.sun.javafx.tools.ant"
+             classpath=".:${env.JAVA_HOME}/lib/ant-javafx.jar"/>
+
+    <!-- Property File -->
+    <property file="wild.properties" />
+
+    <!-- output directories  -->
+    <property name="output.dir" value="${basedir}/output"/>
+    <property name="webstart.dir" value="${basedir}/webstart"/>
+    <property name="dist.dir" value="${basedir}/dist"/>
+
+    <!-- clean all -->
+    <target name="clean">
+        <delete includeemptydirs="true">
+            <fileset dir="${basedir}/lib" includes="**/*"/>
+        </delete>
+        <delete includeemptydirs="true">
+            <fileset dir="${basedir}/jars" includes="**/*"/>
+        </delete>
+        <delete includeemptydirs="true">
+            <fileset dir="${output.dir}" includes="**/*"/>
+        </delete>
+        <delete includeemptydirs="true">
+            <fileset dir="${dist.dir}" includes="**/*"/>
+        </delete>
+    </target>
+
+    <!-- copy OpenDolphin.jar & libs to lib dir -->
+    <target name="copy">
+        <copy file="${target.dir}/OpenDolphin.jar" toFile="${basedir}/lib/OpenDolphin.jar"/>
+        <copy todir="${basedir}/lib" flatten="true">
+            <fileset dir="${target.dir}/lib">
+                <include name="**/*"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- unjar all .jar files  -->
+    <target name="unjar">
+        <for param="jar-file">
+            <path>
+                <fileset dir="${basedir}/lib" includes="*.jar"/>
+            </path>
+            <sequential>
+                <echo>@{jar-file}</echo>
+                <unjar src="@{jar-file}" dest="${basedir}/jars"/>
+            </sequential>
+        </for>
+    </target>
+
+    <!-- erase unnessesary files  -->
+    <target name="clean2">
+        <delete file="${basedir}/jars/META-INF/ASL2.0"/>
+        <delete file="${basedir}/jars/META-INF/BCKEY.DSA"/>
+        <delete file="${basedir}/jars/META-INF/BCKEY.SF"/>
+        <delete file="${basedir}/jars/META-INF/BRUNO_LO.RSA"/>
+        <delete file="${basedir}/jars/META-INF/BRUNO_LO.SF"/>
+        <delete file="${basedir}/jars/META-INF/DEPENDENCIES"/>
+        <delete file="${basedir}/jars/META-INF/INDEX.LIST"/>
+        <delete file="${basedir}/jars/META-INF/info.xml"/>
+        <delete file="${basedir}/jars/META-INF/jdom-info.xml"/>
+        <delete file="${basedir}/jars/META-INF/LICENSE"/>
+        <delete file="${basedir}/jars/META-INF/LICENSE.txt"/>
+        <delete file="${basedir}/jars/META-INF/NOTICE"/>
+        <delete file="${basedir}/jars/META-INF/NOTICE.txt"/>
+        <delete file="${basedir}/jars/META-INF/README"/>
+        <delete file="${basedir}/jars/META-INF/MANIFEST.MF"/>
+        <delete file="${basedir}/jars/META-INF/services/javax.ws.rs.ext.Providers"/>
+        <delete file="${basedir}/jars/META-INF/persistence.xml"/>
+        <delete dir="${basedir}/jars/META-INF/maven"/>             
+    </target>
+
+    <!-- replace javax.ws.rs.ext.Providers -->
+    <target name="replace-service">
+        <copy file="${basedir}/replaces/javax.ws.rs.ext.Providers" toFile="${basedir}/jars/META-INF/services/javax.ws.rs.ext.Providers"/>
+    </target>
+    
+    <!-- jar all -->
+    <target name="jar">
+        <jar destfile="${output.dir}/${appName}.jar" basedir="${basedir}/jars">
+            <manifest>
+                <attribute name="Main-Class" value="${mainClass}"/>
+                <attribute name="Permissions" value="all-permissions"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- sign  --> 
+    <target name="sign">
+        <copy file="${output.dir}/${appName}.jar" toFile="${webstart.dir}/${appName}.jar"/>
+        <signjar jar="${webstart.dir}/${appName}.jar"
+                 tsaurl="${tsaurl}" 
+                 keystore="${keystore}" 
+                 storepass="${storepass}"
+                 alias="${alias.key}"/>
+    </target>
+
+    <!-- sign
+    <target name="sign">
+        <fx:signjar jar="${output.dir}/${appName}.jar"
+                    destdir="${webstart.dir}"
+                    keyStore="${keystore}" 
+                    storePass="${storepass}"
+                    alias="${alias.key}"
+                    keyPass="${storepass}"/>
+    </target>
+    -->
+
+    <target name="webstart" depends="clean,copy,unjar,clean2,replace-service,jar,sign">
+        <echo message="Creating..." />
+        <move file="${webstart.dir}/${appName}.jar" toFile="${webstart.dir}/${arg}/${appName}.jar"/>
+    </target>
+
+    <target name="package" depends="webstart">
+
+        <fx:deploy nativeBundles="dmg"
+                   outdir="${dist.dir}" 
+                   outfile="${appName}"
+                   verbose="true">
+    
+            <fx:application name="${appName}" 
+                            mainClass="${mainClass}"
+                            version="${shortversion}">
+                <fx:argument>${arg}</fx:argument>
+            </fx:application>
+
+            <fx:resources>
+                <fx:fileset dir="${output.dir}" includes="${appName}.jar"/>
+            </fx:resources>
+
+            <fx:info title="${appName}-${shortversion}" 
+                     vendor="${vendor}"
+                     copyright="${copyright}"/>
+
+            <fx:bundleArgument arg="mac.category" value="${category}"/>
+            <fx:bundleArgument arg="mac.CFBundleIdentifier" value="${identifier}"/>
+            <fx:bundleArgument arg="mac.CFBundleName" value="${appName}"/>
+            <fx:bundleArgument arg="mac.CFBundleVersion" value="${bundleVersion}"/>
+            <!-- fx:bundleArgument arg="mac.app-store-entitlements" value="${basedir}/package/macosx/${entitlements}"/ -->
+        </fx:deploy>
+
+        <!-- clean -->
+        <delete file="${output.dir}/OpenDolphin.jar"/>
+        <delete file="${dist.dir}/OpenDolphin.html"/>	
+        <delete file="${dist.dir}/OpenDolphin.jar"/>
+        <delete file="${dist.dir}/OpenDolphin.jnlp"/>
+ 
+    </target>
+
+</project>

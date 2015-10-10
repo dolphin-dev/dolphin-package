@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jnlp codebase="https://i18n.opendolphin.com/dolphin/release/i18n/jaws/" href="launch.jnlp" spec="1.0+">
+    <information>
+        <title>OpenDolphin</title>
+        <vendor>Digital Globe, Inc.</vendor>
+        <homepage href="http://www.digital-globe.co.jp"/>
+        <description>OpenDolphin</description>
+        <description kind="short">OpenDolphin</description>
+	 <icon href="Icon.png" kind="default" width="64" height="64"/>
+       <icon href="Icon.png" kind="shortcut" width="64" height="64"/>
+      <!--
+	<icon href="icon_64x64.png" kind="default" width="64" height="64"/>
+       <icon href="icon_32x32.png" kind="shortcut" width="32" height="32"/>
+      -->
+    <offline-allowed/>
+    <shortcut online="true">
+        <desktop/>
+        <menu submenu="OpenDolphin"/>
+    </shortcut>
+</information>
+<update check="always" policy="prompt-update"/>
+<security>
+<all-permissions/>
+</security>
+<resources>
+    <j2se java-vm-args="-Xms128m -Xmx512m" version="1.8+"/>
+    <jar href="OpenDolphin.jar" main="true"/>
+</resources>
+<application-desc main-class="open.dolphin.client.Dolphin">
+<argument>i18n</argument>
+</application-desc>
+</jnlp>
