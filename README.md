@@ -1,2 +1,2 @@
 ### OpenDolphin Package Maker
-This scripts creates OpenDolphin WebStart Clinet and Mac DMG package.
+This scripts creates OpenDolphin WebStart Client and Mac Disk Image installer.
