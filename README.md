@@ -1,2 +1,2 @@
 ### OpenDolphin Package Maker
-This scripts creates OpenDolphin WebStart Client and Mac Disk Image Installer.
+Ant scripts creates OpenDolphin WebStart Client and Mac Disk Image Installer.
